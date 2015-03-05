@@ -18,6 +18,7 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+Kandra.sdf
 
 # Windows shortcuts
 *.lnk
