@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{85CE3D6D-0B75-48FE-A2D8-A561369F61DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Games", "Games", "{E75BD2BF-232C-4B52-9EC7-B3D16FB9259D}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Kandra", "Intermediate\ProjectFiles\Kandra.vcxproj", "{72B947D6-4868-4C7B-8178-57671C3053AF}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UE4", "Intermediate\ProjectFiles\UE4.vcxproj", "{491C0B60-863C-40AB-B4BC-B6C12E725450}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,5 +35,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{491C0B60-863C-40AB-B4BC-B6C12E725450} = {85CE3D6D-0B75-48FE-A2D8-A561369F61DB}
+		{72B947D6-4868-4C7B-8178-57671C3053AF} = {E75BD2BF-232C-4B52-9EC7-B3D16FB9259D}
 	EndGlobalSection
 EndGlobal
