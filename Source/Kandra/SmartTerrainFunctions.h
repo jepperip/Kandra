@@ -16,7 +16,12 @@ public:
 		UFUNCTION(BlueprintCallable, Category = "SmartTerrain")
 		static TArray<AActor*> GetActorsInRange(class AActor* self);
 
+		UFUNCTION(BlueprintCallable, Category = "SmartTerrain")
 		static void TEST(class AActor* self);
+
+		UFUNCTION(BlueprintCallable, Category = "SmartTerrain")
+			static UINT32 VoidTest();
+
 
 	
 };

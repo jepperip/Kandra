@@ -10,9 +10,14 @@ TArray<AActor*> USmartTerrainFunctions::GetActorsInRange(class AActor* self)
 	return res;
 }
 
-void USmartTerrainFunctions::(class AActor* self)
+void USmartTerrainFunctions::TEST(class AActor* self)
 {
 	int sdf = 34;
+}
+
+UINT32 USmartTerrainFunctions::VoidTest()
+{
+	return 42;
 }
 
 
