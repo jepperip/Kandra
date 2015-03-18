@@ -31,7 +31,7 @@ TArray<AActor*> ASmartObject::GetActorsInRange()
 	TArray<AActor*> res = TArray<AActor*>();
 	FVector pos = GetActorLocation();
 	
-	for (TActorIterator<AActor> allActors(GetWorld()); allActors; ++allActors)
+	for (TActorIterator<ACharacter> allActors(GetWorld()); allActors; ++allActors)
 	{
 		FVector NPCPos = allActors->GetActorLocation();
 

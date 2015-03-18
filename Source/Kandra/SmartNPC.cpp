@@ -2,6 +2,7 @@
 
 #include "Kandra.h"
 #include "SmartNPC.h"
+#include <limits>
 
 
 // Sets default values
@@ -30,6 +31,25 @@ void ASmartNPC::Tick( float DeltaTime )
 void ASmartNPC::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
 	Super::SetupPlayerInputComponent(InputComponent);
+
+}
+
+void ASmartNPC::EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner)
+{
+	float localMin = std::numeric_limits<float>::max();
+	for (FSmartBroadcast sb : contenders)
+	{
+		if (sb.Cost < localMin && sb.Activity == MyCurrentNeed.Activity)
+		{
+			winner = sb;
+			localMin = sb.Cost;
+		}
+	}
+
+}
+
+void ASmartNPC::CalculateCurrentNeed(struct FEnumWrapper& currentNeed)
+{
 
 }
 
