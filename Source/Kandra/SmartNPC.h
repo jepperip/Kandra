@@ -11,13 +11,24 @@ struct FNPCBrain
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPCNeeds")
-	float Hunger;
+		TArray<FNPCNeed> Needs;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPCNeeds")
-	float Tiredness;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPCNeeds")
-	float WorkNeed;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPCNeeds")
-	float OtherNeed;
+		FNPCNeed mostUrgentNeed;
+
+	void Initialize()
+	{
+		Needs = TArray<FNPCNeed>();
+		for (uint8 activity = (uint8)EActivitiesEnum::VE_FIRST + 1; activity != (uint8)EActivitiesEnum::VE_LAST; activity++)
+		{
+			FNPCNeed need;
+			need.Activity = (EActivitiesEnum)activity;
+			Needs.Add(need);
+		}
+
+	}
+
+	void Update();
 };
 
 UCLASS()
@@ -38,17 +49,27 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	FNPCBrain MyBrain;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	FEnumWrapper MyCurrentNeed;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	TArray<FSmartBroadcast> myBroadcasts;
+
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
 	virtual void EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner);
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-	virtual void CalculateCurrentNeed(struct FEnumWrapper& currentNeed);
+	virtual bool CalculateCurrentNeed(struct FEnumWrapper& currentNeed);
+
+	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+		virtual bool UpdateBrain();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SmartFunctions")
+		bool AddBroadcast(FSmartBroadcast b);
+	virtual bool AddBroadcast_Implementation(FSmartBroadcast b);
 
 	
 	

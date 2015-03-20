@@ -7,36 +7,6 @@
 #include "Kandra/SmartTerrainFunctions.h"
 #include "SmartObject.generated.h"
 
-//UENUM(BlueprintType)
-//enum class EActivitiesEnum : uint8
-//{
-//	VE_Sleep UMETA(DisplayName = "Sleep"),
-//	VE_Eat UMETA(DisplayName = "Eat"),
-//	VE_Other UMETA(DisplayName = "Other"),
-//	VE_Work UMETA(DispayName = "Work")
-//};
-//
-//USTRUCT(BlueprintType)
-//struct FSmartBroadcast
-//{
-//	GENERATED_USTRUCT_BODY()
-//		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
-//		AActor* Sender;
-//
-//	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
-//		float Cost;
-//
-//	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
-//		float Distance;
-//
-//	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
-//		EActivitiesEnum Activity;
-//
-//};
-
-
-
-
 UCLASS()
 class KANDRA_API ASmartObject : public AActor
 {
@@ -53,10 +23,16 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+		void Broadcast(FSmartBroadcast b, ASmartNPC* aNpc);
+
+	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
 	TArray<AActor*> GetActorsInRange();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
-		float Range;
+	float Range;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	EActivitiesEnum Activity;
 
 	
 	

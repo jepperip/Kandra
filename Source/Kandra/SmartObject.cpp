@@ -26,6 +26,12 @@ void ASmartObject::Tick( float DeltaTime )
 
 }
 
+void ASmartObject::Broadcast(FSmartBroadcast b, ASmartNPC* aNpc)
+{
+	aNpc->AddBroadcast(b);
+
+}
+
 TArray<AActor*> ASmartObject::GetActorsInRange()
 {
 	TArray<AActor*> res = TArray<AActor*>();

@@ -4,13 +4,20 @@
 #include "SmartNPC.h"
 #include <limits>
 
+void FNPCBrain::Update()
+{
+
+}
 
 // Sets default values
 ASmartNPC::ASmartNPC()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	MyBrain = FNPCBrain();
+	MyBrain.Initialize();
+	MyCurrentNeed.Activity = EActivitiesEnum::VE_FIRST;
+	
 }
 
 // Called when the game starts or when spawned
@@ -24,6 +31,7 @@ void ASmartNPC::BeginPlay()
 void ASmartNPC::Tick( float DeltaTime )
 {
 	Super::Tick( DeltaTime );
+	
 
 }
 
@@ -36,20 +44,50 @@ void ASmartNPC::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 void ASmartNPC::EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner)
 {
-	float localMin = std::numeric_limits<float>::max();
+	float localMin = 0;
+
 	for (FSmartBroadcast sb : contenders)
 	{
-		if (sb.Cost < localMin && sb.Activity == MyCurrentNeed.Activity)
+		for (FNPCNeed sn : sb.SatisfyingNeeds)
 		{
-			winner = sb;
-			localMin = sb.Cost;
+			if (sn.Activity == MyCurrentNeed.Activity)
+			{
+				//Fler grejer här
+				float activityScore = sn.ChangeRate / sb.Cost;
+				if (activityScore < localMin)
+				{
+					winner = sb;
+					localMin = activityScore;
+				}
+			}
 		}
+		
 	}
-
 }
 
-void ASmartNPC::CalculateCurrentNeed(struct FEnumWrapper& currentNeed)
+bool ASmartNPC::CalculateCurrentNeed(struct FEnumWrapper& currentNeed)
 {
+	float localMin = std::numeric_limits<float>::max();
 
+	for (FNPCNeed e : MyBrain.Needs)
+	{
+		float needScore = e.CurrentValue * e.Weight;
+		if (needScore < localMin)
+		{
+			currentNeed.Activity = e.Activity;
+		}
+	}
+	return true;
+}
+
+bool ASmartNPC::UpdateBrain()
+{
+	MyBrain.Update();
+	return true;
+}
+
+bool ASmartNPC::AddBroadcast_Implementation(FSmartBroadcast b)
+{
+	return true;
 }
 
