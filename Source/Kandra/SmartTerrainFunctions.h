@@ -67,10 +67,10 @@ struct FSmartBroadcast
 	float Distance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
-		TArray<FNPCNeed> SatisfyingNeeds;
+	TArray<FNPCNeed> SatisfyingNeeds;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
-		TArray<FNPCNeed> ConsumingNeeds;
+	TArray<FNPCNeed> ConsumingNeeds;
 
 	bool SatisfiesNeed(const FNPCNeed& need) const
 	{

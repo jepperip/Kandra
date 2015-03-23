@@ -32,6 +32,39 @@ void ASmartObject::Broadcast(FSmartBroadcast b, ASmartNPC* aNpc)
 
 }
 
+void ASmartObject::Update()
+{
+	//hur NPC'n påverkas av att spendera tid i huset
+	//Superseg algoritm
+	for (ASmartNPC* npc : Inhabitants)
+	{
+		FNPCNeed* npcNeed = NULL;
+		for (int32 i = 0; i < npc->MyNeeds.Num(); i++)
+		{
+			npcNeed = &npc->MyNeeds[i];
+			if (!npcNeed)continue;
+			for (FNPCNeed satNeed : SatisfyingNeeds)
+			{
+				//Tredjegrasfunktion
+				if (satNeed.Activity == npcNeed->Activity)
+				{
+					npcNeed->CurrentValue += satNeed.ChangeRate;
+					break;
+				}
+			}
+
+			for (FNPCNeed consNeed : ConsumingNeeds)
+			{
+				if (consNeed.Activity == npcNeed->Activity)
+				{
+					npcNeed->CurrentValue -= consNeed.ChangeRate;
+					break;
+				}
+			}
+		}
+	}
+}
+
 TArray<AActor*> ASmartObject::GetActorsInRange()
 {
 	TArray<AActor*> res = TArray<AActor*>();
@@ -47,5 +80,15 @@ TArray<AActor*> ASmartObject::GetActorsInRange()
 	}
 	
 	return res;
+}
+
+void ASmartObject::AddInhabitant(ASmartNPC* npc)
+{
+	Inhabitants.Add(npc);
+}
+
+void ASmartObject::RemoveInhabitant(ASmartNPC* npc)
+{
+	Inhabitants.Remove(npc);
 }
 

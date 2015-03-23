@@ -5,32 +5,6 @@
 #include "Kandra/SmartTerrainFunctions.h"
 #include "SmartNPC.generated.h"
 
-USTRUCT(BlueprintType)
-struct FNPCBrain
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPCNeeds")
-		TArray<FNPCNeed> Needs;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPCNeeds")
-		FNPCNeed mostUrgentNeed;
-
-	void Initialize()
-	{
-		Needs = TArray<FNPCNeed>();
-		for (uint8 activity = (uint8)EActivitiesEnum::VE_FIRST + 1; activity != (uint8)EActivitiesEnum::VE_LAST; activity++)
-		{
-			FNPCNeed need;
-			need.Activity = (EActivitiesEnum)activity;
-			Needs.Add(need);
-		}
-
-	}
-
-	void Update();
-};
-
 UCLASS()
 class KANDRA_API ASmartNPC : public ACharacter
 {
@@ -50,25 +24,22 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
-	FNPCBrain MyBrain;
+	TArray<FNPCNeed> MyNeeds;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
-	FEnumWrapper MyCurrentNeed;
+	FNPCNeed MyCurrentNeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	TArray<FSmartBroadcast> myBroadcasts;
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-	virtual void EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner);
+		virtual float EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner);
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-	virtual bool CalculateCurrentNeed(struct FEnumWrapper& currentNeed);
-
-	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-		virtual bool UpdateBrain();
+		virtual float CalculateCurrentNeed();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SmartFunctions")
-		bool AddBroadcast(FSmartBroadcast b);
+	bool AddBroadcast(FSmartBroadcast b);
 	virtual bool AddBroadcast_Implementation(FSmartBroadcast b);
 
 	

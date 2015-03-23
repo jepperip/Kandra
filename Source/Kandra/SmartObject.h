@@ -23,10 +23,19 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-		void Broadcast(FSmartBroadcast b, ASmartNPC* aNpc);
+	void Broadcast(FSmartBroadcast b, ASmartNPC* aNpc);
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
 	TArray<AActor*> GetActorsInRange();
+
+	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+	void AddInhabitant(ASmartNPC* npc);
+
+	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+	void RemoveInhabitant(ASmartNPC* npc);
+
+	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+	void Update();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	float Range;
@@ -34,6 +43,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	EActivitiesEnum Activity;
 
-	
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	TArray<FNPCNeed> SatisfyingNeeds;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	TArray<FNPCNeed> ConsumingNeeds;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	TArray<ASmartNPC*> Inhabitants;
+
 };

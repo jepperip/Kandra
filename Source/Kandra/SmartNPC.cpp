@@ -4,19 +4,20 @@
 #include "SmartNPC.h"
 #include <limits>
 
-void FNPCBrain::Update()
-{
-
-}
-
 // Sets default values
 ASmartNPC::ASmartNPC()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	MyBrain = FNPCBrain();
-	MyBrain.Initialize();
 	MyCurrentNeed.Activity = EActivitiesEnum::VE_FIRST;
+
+	MyNeeds = TArray<FNPCNeed>();
+	for (uint8 activity = (uint8)EActivitiesEnum::VE_FIRST + 1; activity != (uint8)EActivitiesEnum::VE_LAST; activity++)
+	{
+		FNPCNeed need;
+		need.Activity = (EActivitiesEnum)activity;
+		MyNeeds.Add(need);
+	}
 	
 }
 
@@ -42,48 +43,62 @@ void ASmartNPC::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 }
 
-void ASmartNPC::EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner)
+float ASmartNPC::EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner)
 {
-	float localMin = 0;
+	float localMax = 0;
 
-	for (FSmartBroadcast sb : contenders)
+	for (FSmartBroadcast broadcast : contenders)
 	{
-		for (FNPCNeed sn : sb.SatisfyingNeeds)
+		for (FNPCNeed satNeed : broadcast.SatisfyingNeeds)
 		{
-			if (sn.Activity == MyCurrentNeed.Activity)
+			if (satNeed.Activity == MyCurrentNeed.Activity)
 			{
 				//Fler grejer här
-				float activityScore = sn.ChangeRate / sb.Cost;
-				if (activityScore < localMin)
+				float positiveBonus = 0;
+				float negativeBonus = 0;
+
+				//För att ge premie till "dyra" ställen
+				for (FNPCNeed n : MyNeeds)
 				{
-					winner = sb;
-					localMin = activityScore;
+					for (FNPCNeed n2 : broadcast.ConsumingNeeds)
+					{
+						if (n.Activity == n2.Activity)
+						{
+							negativeBonus += n2.ChangeRate;
+							positiveBonus += n.ChangeRate;
+						}
+					}
+				}
+
+				float activityScore = (satNeed.ChangeRate + positiveBonus) / (broadcast.Distance + broadcast.Cost);
+
+				if (activityScore > localMax)
+				{
+					winner = broadcast;
+					localMax = activityScore;
 				}
 			}
 		}
 		
 	}
+
+	return localMax;
 }
 
-bool ASmartNPC::CalculateCurrentNeed(struct FEnumWrapper& currentNeed)
+float ASmartNPC::CalculateCurrentNeed()
 {
 	float localMin = std::numeric_limits<float>::max();
-
-	for (FNPCNeed e : MyBrain.Needs)
+	
+	for (FNPCNeed e : MyNeeds)
 	{
-		float needScore = e.CurrentValue * e.Weight;
+		float needScore = pow(e.CurrentValue, 1 - e.Weight);
 		if (needScore < localMin)
 		{
-			currentNeed.Activity = e.Activity;
+			localMin = needScore;
+			MyCurrentNeed = e;
 		}
 	}
-	return true;
-}
-
-bool ASmartNPC::UpdateBrain()
-{
-	MyBrain.Update();
-	return true;
+	return localMin;
 }
 
 bool ASmartNPC::AddBroadcast_Implementation(FSmartBroadcast b)
