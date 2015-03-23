@@ -47,7 +47,7 @@ struct FNPCNeed
 	{
 		CurrentValue = 0.0f;
 		ChangeRate = 0.01f;
-		Weight = 1.0f;
+		Weight = 0.5f;
 		Activity = EActivitiesEnum::VE_FIRST;
 	}
 

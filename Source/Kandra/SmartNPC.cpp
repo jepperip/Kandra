@@ -89,15 +89,21 @@ float ASmartNPC::CalculateCurrentNeed()
 {
 	float localMin = std::numeric_limits<float>::max();
 	
-	for (FNPCNeed e : MyNeeds)
+	FNPCNeed* temp = NULL;
+	for (int32 i = 0; i < MyNeeds.Num(); i++)
 	{
-		float needScore = pow(e.CurrentValue, 1 - e.Weight);
+		temp = &MyNeeds[i];
+		if (!temp)continue;
+		float needScore = temp->CurrentValue * (1 - temp->Weight);
+		//needScore = pow(temp->CurrentValue, 1 - temp->Weight);
 		if (needScore < localMin)
 		{
 			localMin = needScore;
-			MyCurrentNeed = e;
+			MyCurrentNeed = *temp;
 		}
+
 	}
+
 	return localMin;
 }
 

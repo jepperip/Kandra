@@ -41,9 +41,6 @@ public:
 	float Range;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
-	EActivitiesEnum Activity;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	TArray<FNPCNeed> SatisfyingNeeds;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
