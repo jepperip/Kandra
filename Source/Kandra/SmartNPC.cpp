@@ -58,30 +58,45 @@ float ASmartNPC::EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct F
 				float negativeBonus = 0;
 
 				//För att ge premie till "dyra" ställen
-				for (FNPCNeed n : MyNeeds)
+				for (FNPCNeed npcNeed : MyNeeds)
 				{
-					for (FNPCNeed n2 : broadcast.ConsumingNeeds)
+					if (npcNeed.CurrentValue <= 0) 
 					{
-						if (n.Activity == n2.Activity)
+						npcNeed.CurrentValue = 0.00001f;
+					}
+					for (FNPCNeed penaltyNeed : broadcast.ConsumingNeeds)
+					{
+						if (npcNeed.Activity == penaltyNeed.Activity)
 						{
-							negativeBonus += n2.ChangeRate;
-							positiveBonus += n.ChangeRate;
+							//(NegativeChangerate^1-Weight) / CurrentValue
+							negativeBonus += (pow(penaltyNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
+						}
+					}
+
+					for (FNPCNeed incNeed : broadcast.SatisfyingNeeds)
+					{
+						if (npcNeed.Activity == incNeed.Activity)
+						{
+							//(PositiveChangerate^1-Weight) / CurrentValue
+							positiveBonus += (pow(incNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
 						}
 					}
 				}
+				
+				float activityScore = (1 + (positiveBonus - negativeBonus)) / broadcast.Cost;
 
-				float activityScore = (satNeed.ChangeRate + positiveBonus) / (broadcast.Distance + broadcast.Cost);
-
-				if (activityScore > localMax)
+				if (activityScore >= localMax)
 				{
 					winner = broadcast;
 					localMax = activityScore;
 				}
+
+				break;
 			}
 		}
 		
 	}
-
+	CurrentGoalScore = localMax;
 	return localMax;
 }
 

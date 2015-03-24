@@ -23,13 +23,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	TArray<FNPCNeed> MyNeeds;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SmartProperty")
+	float CurrentGoalScore;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	FNPCNeed MyCurrentNeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	TArray<FSmartBroadcast> myBroadcasts;
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
