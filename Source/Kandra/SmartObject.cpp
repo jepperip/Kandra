@@ -3,7 +3,6 @@
 #include "Kandra.h"
 #include "SmartObject.h"
 
-
 // Sets default values
 ASmartObject::ASmartObject()
 {
@@ -26,7 +25,7 @@ void ASmartObject::Tick( float DeltaTime )
 
 }
 
-void ASmartObject::Broadcast(FSmartBroadcast b, ASmartNPC* aNpc)
+void ASmartObject::Broadcast(const FSmartBroadcast& b, ASmartNPC* aNpc)
 {
 	aNpc->AddBroadcast(b);
 
@@ -84,6 +83,7 @@ TArray<AActor*> ASmartObject::GetActorsInRange()
 
 void ASmartObject::AddInhabitant(ASmartNPC* npc)
 {
+	Inhabitants.AddUnique(npc);
 	Inhabitants.Add(npc);
 }
 

@@ -23,7 +23,7 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-	void Broadcast(FSmartBroadcast b, ASmartNPC* aNpc);
+	void Broadcast(const FSmartBroadcast& b, ASmartNPC* aNpc);
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
 	TArray<AActor*> GetActorsInRange();

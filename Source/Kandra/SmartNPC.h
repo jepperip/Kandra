@@ -3,7 +3,9 @@
 #pragma once
 #include "GameFramework/Character.h"
 #include "Kandra/SmartTerrainFunctions.h"
+#include <unordered_map>
 #include "SmartNPC.generated.h"
+
 
 UCLASS()
 class KANDRA_API ASmartNPC : public ACharacter
@@ -13,6 +15,11 @@ class KANDRA_API ASmartNPC : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ASmartNPC();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	FSmartBroadcast Destination;
+
+	TMap<AActor*, struct FSmartBroadcast> ObjectMap;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -35,15 +42,24 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	TArray<FSmartBroadcast> myBroadcasts;
 
-	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-		virtual float EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner);
+	//UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+	//virtual float EvaluateBroadcasts(const TArray<FSmartBroadcast>& contenders, struct FSmartBroadcast& winner);
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-		virtual float CalculateCurrentNeed();
+	virtual float EvaluateBroadcasts(struct FSmartBroadcast& winner);
+
+	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+	virtual float CalculateCurrentNeed();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SmartFunctions")
-	bool AddBroadcast(FSmartBroadcast b);
-	virtual bool AddBroadcast_Implementation(FSmartBroadcast b);
+	bool AddBroadcast(const FSmartBroadcast& b);
+	virtual bool AddBroadcast_Implementation(const FSmartBroadcast& b);
+
+	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+	virtual void GetBroadcast(AActor* sender, FSmartBroadcast& Result);
+
+	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
+	virtual TArray<FSmartBroadcast> GetAllBroadcasts();
 
 	
 	

@@ -43,6 +43,11 @@ struct FNPCNeed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NeedProperties")
 	float Weight;
 
+	bool operator==(const FNPCNeed& other)
+	{
+		return other.Activity == this->Activity;
+	}
+
 	FNPCNeed()
 	{
 		CurrentValue = 0.5f;
@@ -57,26 +62,34 @@ USTRUCT(BlueprintType)
 struct FSmartBroadcast
 {
 	GENERATED_USTRUCT_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
 	AActor* Sender;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
 	float Cost;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
 	float Distance;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
+	float Range;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
 	TArray<FNPCNeed> SatisfyingNeeds;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BroadcastProperties")
 	TArray<FNPCNeed> ConsumingNeeds;
+
+	bool operator== (const FSmartBroadcast& other)
+	{
+		return other.Sender == this->Sender;
+	}
 
 	bool SatisfiesNeed(const FNPCNeed& need) const
 	{
 		for (FNPCNeed n : SatisfyingNeeds)
 		{
-			if (n.Activity == need.Activity)
+			if (n == need)
 			{
 				return true;
 			}

@@ -4,6 +4,8 @@
 #include "SmartNPC.h"
 #include <limits>
 
+class ASmartObject;
+
 // Sets default values
 ASmartNPC::ASmartNPC()
 {
@@ -18,6 +20,8 @@ ASmartNPC::ASmartNPC()
 		need.Activity = (EActivitiesEnum)activity;
 		MyNeeds.Add(need);
 	}
+
+	ObjectMap = TMap<AActor*, struct FSmartBroadcast>();
 	
 }
 
@@ -43,15 +47,78 @@ void ASmartNPC::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 }
 
-float ASmartNPC::EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct FSmartBroadcast& winner)
+//float ASmartNPC::EvaluateBroadcasts(const TArray<FSmartBroadcast>& contenders, struct FSmartBroadcast& winner)
+//{
+//	float localMax = 0;
+//
+//	for (FSmartBroadcast broadcast : contenders)
+//	{
+//		if (broadcast.Range > broadcast.Distance) continue;
+//
+//		for (FNPCNeed satNeed : broadcast.SatisfyingNeeds)
+//		{
+//			if (satNeed == MyCurrentNeed)
+//			{
+//				//Fler grejer här
+//				float positiveBonus = 0;
+//				float negativeBonus = 0;
+//
+//				//För att ge premie till "dyra" ställen
+//				for (FNPCNeed npcNeed : MyNeeds)
+//				{
+//					if (npcNeed.CurrentValue <= 0) 
+//					{
+//						npcNeed.CurrentValue = 0.00001f;
+//					}
+//					for (FNPCNeed penaltyNeed : broadcast.ConsumingNeeds)
+//					{
+//						if (npcNeed == penaltyNeed)
+//						{
+//							//(NegativeChangerate^1-Weight) / CurrentValue
+//							negativeBonus += (pow(penaltyNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
+//						}
+//					}
+//
+//					for (FNPCNeed incNeed : broadcast.SatisfyingNeeds)
+//					{
+//						if (npcNeed == incNeed)
+//						{
+//							//(PositiveChangerate^1-Weight) / CurrentValue
+//							positiveBonus += (pow(incNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
+//						}
+//					}
+//				}
+//				
+//				float activityScore = (1 + (positiveBonus - negativeBonus)) * (1 - broadcast.Cost);
+//
+//				if (activityScore >= localMax)
+//				{
+//					winner = broadcast;
+//					localMax = activityScore;
+//				}
+//
+//				break;
+//			}
+//		}
+//		
+//	}
+//	CurrentGoalScore = localMax;
+//	return localMax;
+//}
+
+float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner)
 {
 	float localMax = 0;
-
-	for (FSmartBroadcast broadcast : contenders)
+	auto it = ObjectMap.CreateConstIterator();
+	for (it; it; ++it)
 	{
+		FSmartBroadcast broadcast = it->Value;
+
+		if (broadcast.Distance > broadcast.Range) continue;
+
 		for (FNPCNeed satNeed : broadcast.SatisfyingNeeds)
 		{
-			if (satNeed.Activity == MyCurrentNeed.Activity)
+			if (satNeed == MyCurrentNeed)
 			{
 				//Fler grejer här
 				float positiveBonus = 0;
@@ -60,13 +127,13 @@ float ASmartNPC::EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct F
 				//För att ge premie till "dyra" ställen
 				for (FNPCNeed npcNeed : MyNeeds)
 				{
-					if (npcNeed.CurrentValue <= 0) 
+					if (npcNeed.CurrentValue <= 0)
 					{
 						npcNeed.CurrentValue = 0.00001f;
 					}
 					for (FNPCNeed penaltyNeed : broadcast.ConsumingNeeds)
 					{
-						if (npcNeed.Activity == penaltyNeed.Activity)
+						if (npcNeed == penaltyNeed)
 						{
 							//(NegativeChangerate^1-Weight) / CurrentValue
 							negativeBonus += (pow(penaltyNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
@@ -75,27 +142,26 @@ float ASmartNPC::EvaluateBroadcasts(TArray<FSmartBroadcast> contenders, struct F
 
 					for (FNPCNeed incNeed : broadcast.SatisfyingNeeds)
 					{
-						if (npcNeed.Activity == incNeed.Activity)
+						if (npcNeed == incNeed)
 						{
 							//(PositiveChangerate^1-Weight) / CurrentValue
 							positiveBonus += (pow(incNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
 						}
 					}
 				}
-				
-				float activityScore = (1 + (positiveBonus - negativeBonus)) / broadcast.Cost;
+
+				float activityScore = (1 + (positiveBonus - negativeBonus)) * (1 - broadcast.Cost);
 
 				if (activityScore >= localMax)
 				{
 					winner = broadcast;
 					localMax = activityScore;
 				}
-
 				break;
 			}
 		}
-		
 	}
+
 	CurrentGoalScore = localMax;
 	return localMax;
 }
@@ -122,8 +188,43 @@ float ASmartNPC::CalculateCurrentNeed()
 	return localMin;
 }
 
-bool ASmartNPC::AddBroadcast_Implementation(FSmartBroadcast b)
+bool ASmartNPC::AddBroadcast_Implementation(const FSmartBroadcast& b)
 {
+	FSmartBroadcast* it = ObjectMap.Find(b.Sender);
+	if (it == NULL)
+	{
+		//Object does not exist, add a new Object
+		ObjectMap.Add(b.Sender, b);
+	}
+	else
+	{
+		//Object exists, update it's values
+		it->Cost = b.Cost;
+		it->Distance = b.Distance;
+	}
+	
 	return true;
+}
+
+void ASmartNPC::GetBroadcast(AActor* sender, FSmartBroadcast& Result)
+{
+	FSmartBroadcast* it = ObjectMap.Find(sender);
+	if (it != NULL)
+	{
+		Result = *it;
+	}
+
+}
+
+TArray<FSmartBroadcast> ASmartNPC::GetAllBroadcasts()
+{
+	TArray<FSmartBroadcast> result = TArray<FSmartBroadcast>();
+	
+	for (auto it = ObjectMap.CreateConstIterator(); it; ++it)
+	{
+		result.Add(it->Value);
+	}
+
+	return result;
 }
 
