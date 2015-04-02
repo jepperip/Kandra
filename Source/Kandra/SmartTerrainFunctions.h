@@ -16,7 +16,7 @@ enum class EActivitiesEnum : uint8
 
 	VE_Sleep UMETA(DisplayName = "Sleep"),
 	VE_Eat UMETA(DisplayName = "Eat"),
-	VE_Other UMETA(DisplayName = "Other"),
+	VE_Leisure UMETA(DisplayName = "Leisure"),
 	VE_Work UMETA(DispayName = "Work"),
 
 	VE_LAST UMETA(DisplayName = "Must come last")
@@ -58,6 +58,14 @@ struct FNPCNeed
 		ChangeRate = 0.01f;
 		Weight = 0.2f;
 		Activity = EActivitiesEnum::VE_FIRST;
+	}
+
+	FNPCNeed(EActivitiesEnum activity, float startValue, float changeRate, float Weight)
+	{
+		CurrentValue = startValue;
+		ChangeRate = changeRate;
+		this->Weight = Weight;
+		Activity = activity;
 	}
 
 };
@@ -120,6 +128,9 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveNPCNeeds"), Category = "LogginToolsForStani")
 		static bool SaveNPCNeeds(AActor* SmartNpc, TArray<FString> labels, const int32 h, const int32 m, const int32 s, FString& Result);
 
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveNPCNeeds"), Category = "LogginToolsForStani")
+		static bool LogBroadcast(const FSmartBroadcast& b, AActor* npc, float score, float positive, float negative);
+
 private:
 
 	static const string outputDir;
@@ -129,6 +140,7 @@ private:
 	static string version;
 	static bool newSession;
 	static bool firstTimeLoggingNeeds;
+	static bool firstTimeLoggingBroadcasts;
 	static int versionNumber;
 
 };

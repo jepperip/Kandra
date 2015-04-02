@@ -10,6 +10,7 @@ const string USmartTerrainFunctions::fileEnding = ".log";
 FString USmartTerrainFunctions::file = "0";
 bool USmartTerrainFunctions::newSession = true;
 bool USmartTerrainFunctions::firstTimeLoggingNeeds = true;
+bool USmartTerrainFunctions::firstTimeLoggingBroadcasts = true;
 int USmartTerrainFunctions::versionNumber = 0;
 
 bool USmartTerrainFunctions::SaveToFile_SaveStringTextToFile(FString fileName, FString SaveText, FString& Result){
@@ -124,4 +125,38 @@ bool USmartTerrainFunctions::SaveNPCNeeds(AActor* SmartNpc, TArray<FString> labe
 	SaveToFile_SaveStringTextToFile(name, data, Result);
 
 	return true;
+}
+
+bool USmartTerrainFunctions::LogBroadcast(const FSmartBroadcast& b, AActor* npc, float score, float positive, float negative)
+{
+	FString name = npc->GetName();
+	AActor* sender = b.Sender;
+	if (!sender)
+	{
+		return false;
+	}
+	name += " Broadcasts";
+
+	string data = string("\t");
+	data += "NPC: ";
+	data += TCHAR_TO_UTF8(*npc->GetName());
+	data += "\tObject: ";
+	data += TCHAR_TO_UTF8(*sender->GetName());
+	data += "\tScore: ";
+	data += to_string(score);
+	data += "\tPossyB: ";
+	data += to_string(positive);
+	data += "\tNeggoB: ";
+	data += to_string(negative);
+	data += "\tDistance: ";
+	data += to_string(b.Distance);
+	data += "\tCost: ";
+	data += to_string(b.Cost);
+	data += "\n";
+
+	FString res = FString();
+	SaveToFile_SaveStringTextToFile(name, data.c_str(), res);
+
+	return true;
+
 }

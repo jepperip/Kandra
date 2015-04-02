@@ -19,6 +19,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	FSmartBroadcast Destination;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+		bool LogNeeds;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+		bool LogBroadcasts;
+
 	TMap<AActor*, struct FSmartBroadcast> ObjectMap;
 
 	// Called when the game starts or when spawned
@@ -30,7 +36,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	TArray<FNPCNeed> MyNeeds;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SmartProperty")
@@ -38,12 +44,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 	FNPCNeed MyCurrentNeed;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SmartProperty")
-	TArray<FSmartBroadcast> myBroadcasts;
-
-	//UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-	//virtual float EvaluateBroadcasts(const TArray<FSmartBroadcast>& contenders, struct FSmartBroadcast& winner);
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
 	virtual float EvaluateBroadcasts(struct FSmartBroadcast& winner);
@@ -61,6 +61,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
 	virtual TArray<FSmartBroadcast> GetAllBroadcasts();
 
-	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SmartFunction")
+	bool UpdateNeeds();
+	virtual bool UpdateNeeds_Implementation();
 	
 };
