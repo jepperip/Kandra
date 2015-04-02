@@ -228,3 +228,4 @@ TArray<FSmartBroadcast> ASmartNPC::GetAllBroadcasts()
 	return result;
 }
 
+

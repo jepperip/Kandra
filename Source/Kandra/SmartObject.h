@@ -22,8 +22,9 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-	void Broadcast(const FSmartBroadcast& b, ASmartNPC* aNpc);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "SmartFunctions")
+	bool Broadcast(const FSmartBroadcast& b, ASmartNPC* aNpc);
+	virtual bool Broadcast_Implementation(const FSmartBroadcast& b, ASmartNPC* aNpc);
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
 	TArray<AActor*> GetActorsInRange();

@@ -25,10 +25,9 @@ void ASmartObject::Tick( float DeltaTime )
 
 }
 
-void ASmartObject::Broadcast(const FSmartBroadcast& b, ASmartNPC* aNpc)
+bool ASmartObject::Broadcast_Implementation(const FSmartBroadcast& b, ASmartNPC* aNpc)
 {
-	aNpc->AddBroadcast(b);
-
+	return aNpc->AddBroadcast(b);
 }
 
 void ASmartObject::Update()

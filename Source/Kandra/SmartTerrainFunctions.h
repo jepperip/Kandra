@@ -3,6 +3,10 @@
 #pragma once
 
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include <string>
+#include <fstream>
+#include <ctime>
+using namespace std;
 #include "SmartTerrainFunctions.generated.h"
 
 UENUM(BlueprintType)
@@ -106,5 +110,25 @@ class KANDRA_API USmartTerrainFunctions : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
+
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveToFile"), Category = "LogginToolsForStani")
+		static bool SaveToFile_SaveStringTextToFile(FString fileName, FString SaveText, FString& Result);
+
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveActorPosition"), Category = "LogginToolsForStani")
+		static bool SaveToFile_SaveActorPosition(AActor* actor, FString& Result);
+
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveNPCNeeds"), Category = "LogginToolsForStani")
+		static bool SaveNPCNeeds(AActor* SmartNpc, TArray<FString> labels, const int32 h, const int32 m, const int32 s, FString& Result);
+
+private:
+
+	static const string outputDir;
+	static const string versionFormat;
+	static const string fileEnding;
+	static FString file;
+	static string version;
+	static bool newSession;
+	static bool firstTimeLoggingNeeds;
+	static int versionNumber;
 
 };
