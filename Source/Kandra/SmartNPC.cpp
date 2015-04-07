@@ -138,15 +138,7 @@ float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner)
 			{
 				if (npcNeed == penaltyNeed)
 				{
-					//(NegativeChangerate^1-Weight) / CurrentValue
-
-
-
-					//(PositiveChangerate^1-Weight) / CurrentValue
-
-					//negativeBonus += (pow(penaltyNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
-					/*negativeBonus += (1 - npcNeed.CurrentValue) + (penaltyNeed.ChangeRate * npcNeed.Weight);*/
-					negativeBonus += penaltyNeed.ChangeRate + pow(npcNeed.Weight, npcNeed.CurrentValue);
+					negativeBonus += (penaltyNeed.ChangeRate * npcNeed.Weight) / npcNeed.CurrentValue;
 				}
 			}
 
@@ -154,10 +146,7 @@ float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner)
 			{
 				if (npcNeed == incNeed)
 				{
-					//(PositiveChangerate^1-Weight) / CurrentValue
-					//positiveBonus += (pow(incNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
-					/*positiveBonus += (1 - npcNeed.CurrentValue) + (incNeed.ChangeRate * npcNeed.Weight);*/
-					positiveBonus += incNeed.ChangeRate + pow(npcNeed.Weight, npcNeed.CurrentValue);
+					positiveBonus += (incNeed.ChangeRate * npcNeed.Weight) / npcNeed.CurrentValue;
 				}
 			}
 
