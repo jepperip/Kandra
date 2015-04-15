@@ -118,53 +118,60 @@ void ASmartNPC::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner)
 {
-	float localMax = 0;
+	float max = 0;
 	auto it = ObjectMap.CreateConstIterator();
+
+	//För varje broadcast
 	for (it; it; ++it)
 	{
 		FSmartBroadcast broadcast = it->Value;
-
+		//Om broadcast är i range
 		if (broadcast.Distance > broadcast.Range) continue;
+		float totalPositive = 0, totalNegative = 0;
 
-		for (FNPCNeed npcNeed : MyNeeds)
-		{
+		//Räkna ut kostnad
+		double cost = broadcast.Distance / broadcast.Range;
+
+		//För varje behov
+		for (FNPCNeed npcNeed : MyNeeds){
 			float positiveBonus = 0;
 			float negativeBonus = 0;
-			if (npcNeed.CurrentValue <= 0)
-			{
+
+			if (npcNeed.CurrentValue <= 0){
 				npcNeed.CurrentValue = 0.00001f;
 			}
-			for (FNPCNeed penaltyNeed : broadcast.ConsumingNeeds)
-			{
-				if (npcNeed == penaltyNeed)
-				{
-					negativeBonus += (penaltyNeed.ChangeRate * npcNeed.Weight) / npcNeed.CurrentValue;
+
+			//Om broadcasten kostar behovet, lägg till till broadcast totala negativa värde
+			for (FNPCNeed penaltyNeed : broadcast.ConsumingNeeds){
+				if (npcNeed.Activity == penaltyNeed.Activity){
+					totalNegative += (penaltyNeed.ChangeRate * npcNeed.Weight) / npcNeed.CurrentValue;
 				}
 			}
 
-			for (FNPCNeed incNeed : broadcast.SatisfyingNeeds)
-			{
-				if (npcNeed == incNeed)
-				{
-					positiveBonus += (incNeed.ChangeRate * npcNeed.Weight) / npcNeed.CurrentValue;
+			//Om broadcasten ger behovet, lägg till till broadcast totala positiva värde
+			for (FNPCNeed incNeed : broadcast.SatisfyingNeeds){
+				if (npcNeed.Activity == incNeed.Activity){
+					totalPositive += (incNeed.ChangeRate * npcNeed.Weight) / npcNeed.CurrentValue;
 				}
-			}
+			}		
+		}
 
-			float activityScore = (positiveBonus - negativeBonus);
-			if (LogBroadcasts)
-			{
-				USmartTerrainFunctions::LogBroadcast(broadcast, this, activityScore, positiveBonus, negativeBonus);
-			}
-			if (activityScore >= localMax)
-			{
-				winner = broadcast;
-				localMax = activityScore;
-			}
+		//Broadcast totalpoäng
+		float broadcastScore = (totalPositive - totalNegative) + 1 - cost;
+
+		if (LogBroadcasts){
+			USmartTerrainFunctions::LogBroadcast(broadcast, this, broadcastScore, totalPositive, totalNegative);
+		}
+
+		//om poängen är bätter än current, sätt broadcasten till tillfällig vinanre
+		if (broadcastScore >= max){
+			winner = broadcast;
+			max = broadcastScore;
 		}
 	}
 
-	CurrentGoalScore = localMax;
-	return localMax;
+	CurrentGoalScore = max;
+	return max;
 }
 
 float ASmartNPC::CalculateCurrentNeed()

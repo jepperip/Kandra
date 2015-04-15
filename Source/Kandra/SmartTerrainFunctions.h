@@ -6,6 +6,7 @@
 #include <string>
 #include <fstream>
 #include <ctime>
+#include <algorithm>
 using namespace std;
 #include "SmartTerrainFunctions.generated.h"
 
@@ -118,29 +119,40 @@ class KANDRA_API USmartTerrainFunctions : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "StartNewSession"), Category = "LOGGING")
+		static bool StartNewSession(TArray<FString> needLabels);
 
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveToFile"), Category = "LogginToolsForStani")
 		static bool SaveToFile_SaveStringTextToFile(FString fileName, FString SaveText, FString& Result);
 
-	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveActorPosition"), Category = "LogginToolsForStani")
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveActorPosition"), Category = "LOGGING")
 		static bool SaveToFile_SaveActorPosition(AActor* actor, FString& Result);
 
-	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveNPCNeeds"), Category = "LogginToolsForStani")
-		static bool SaveNPCNeeds(AActor* SmartNpc, TArray<FString> labels, const int32 h, const int32 m, const int32 s, FString& Result);
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveNPCNeeds"), Category = "LOGGING")
+		static bool SaveNPCNeeds(AActor* SmartNpc, const int32 h, const int32 m, const int32 s, FString& Result);
 
-	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveNPCNeeds"), Category = "LogginToolsForStani")
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "LogBroadcast"), Category = "LOGGING")
 		static bool LogBroadcast(const FSmartBroadcast& b, AActor* npc, float score, float positive, float negative);
+
+	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "LogSchedule"), Category = "LOGGING")
+		static bool LogSchedule(AActor* so, AActor* npc, TArray<FString> needs, const int32 h, const int32 m);
 
 private:
 
-	static const string outputDir;
+	inline static float GetElapsedTime(UWorld* contex) { return contex->GetTimeSeconds(); }
+	inline static float GetElapsedTime(AActor* contexHolder) { return contexHolder->GetWorld()->GetTimeSeconds(); }
+
+	static void SaveLog(string fileName, string data);
+
+	static void CreateLoggingFile(string fileName, string labels);
+
+	static const string RootDirectory;
 	static const string versionFormat;
 	static const string fileEnding;
-	static FString file;
 	static string version;
+	static string SessionDirectory;
 	static bool newSession;
-	static bool firstTimeLoggingNeeds;
-	static bool firstTimeLoggingBroadcasts;
+	static bool sessionInitialized;
 	static int versionNumber;
 
 };

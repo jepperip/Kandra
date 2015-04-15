@@ -3,20 +3,99 @@
 #include "Kandra.h"
 #include "SmartTerrainFunctions.h"
 #include "Kandra/SmartNPC.h"
+#include "Kandra/SmartObject.h"
 
-const string USmartTerrainFunctions::outputDir = "LOGGING";
+const string USmartTerrainFunctions::RootDirectory = "LOGGING";
 const string USmartTerrainFunctions::versionFormat = "v";
 const string USmartTerrainFunctions::fileEnding = ".log";
-FString USmartTerrainFunctions::file = "0";
+string USmartTerrainFunctions::SessionDirectory = string();
 bool USmartTerrainFunctions::newSession = true;
-bool USmartTerrainFunctions::firstTimeLoggingNeeds = true;
-bool USmartTerrainFunctions::firstTimeLoggingBroadcasts = true;
+bool USmartTerrainFunctions::sessionInitialized = false;
 int USmartTerrainFunctions::versionNumber = 0;
+
+void USmartTerrainFunctions::CreateLoggingFile(string fileName, string labels)
+{
+	time_t now = time(0);
+	char* date = ctime(&now);
+	ofstream stream;
+	stream.open(fileName + fileEnding, ios_base::app);
+	stream << date << '\n';
+	stream << labels << '\n';
+	stream.close();
+}
+
+bool USmartTerrainFunctions::StartNewSession(TArray<FString> needLabels)
+{
+	time_t now = time(0);
+	char* date = ctime(&now);
+	string dateFormatted = date;
+	dateFormatted.erase(remove_if(dateFormatted.begin(), dateFormatted.end(), isspace), dateFormatted.end());
+	dateFormatted.erase(remove(dateFormatted.begin(), dateFormatted.end(), ':'), dateFormatted.end());
+
+	FString p = FPaths::GameDir();
+	p += RootDirectory.c_str();
+	string path = string(TCHAR_TO_UTF8(*p));
+	path += "/" + dateFormatted;
+	FString pathTest = path.c_str();
+
+	if (FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*pathTest)){
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: Path: '" + pathTest + "' already exists. Logging session NOT started");
+		return false;
+	}
+	FPlatformFileManager::Get().GetPlatformFile().CreateDirectory(*pathTest);
+	if (!FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*pathTest)){
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: Could not create path: '" + pathTest + "'. Logging session NOT started");
+		return false;
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "LOGGING: Created path: '" + pathTest + "', logging session started");
+
+
+
+	//Create files
+	string labForm = string("Tid\t");
+	for (auto it = needLabels.CreateConstIterator(); it; ++it)
+	{
+		FString f = *it;
+		labForm += TCHAR_TO_UTF8(*f);
+		labForm += '\t';
+	}
+	
+	CreateLoggingFile(path + "/Schedule", "Time\tNeed\t");
+	CreateLoggingFile(path + "/Needs", labForm);
+	CreateLoggingFile(path + "/Broadcasts", "NPC\tObject\tScore\tPositiv\tnNegativ\nAvstnd");
+
+	sessionInitialized = true;
+	SessionDirectory = path;
+	return true;
+}
+
+void USmartTerrainFunctions::SaveLog(string fileName, string data)
+{
+	ofstream stream;
+	stream.open(SessionDirectory + '/' + fileName + fileEnding, ios_base::app);
+	stream << data << '\n';
+	stream.close();
+}
 
 bool USmartTerrainFunctions::SaveToFile_SaveStringTextToFile(FString fileName, FString SaveText, FString& Result){
 	FString path;
 	path = FPaths::GameDir();
-	path += outputDir.c_str();
+	path += RootDirectory.c_str();
+	if (!sessionInitialized)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: No Session Started before logging. No data will be logged");
+		Result = "FAIL";
+		return false;
+	}
+
+	if (newSession)
+	{
+		time_t now = time(0);
+		char* date = ctime(&now);
+		path += "/";
+		path += date;
+	}
 
 	//check if directory exists. If not: create it
 	if (!FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*path)){
@@ -44,7 +123,6 @@ bool USmartTerrainFunctions::SaveToFile_SaveStringTextToFile(FString fileName, F
 
 	//Save data to the file	
 	ofstream stream;
-	file = temp;
 	stream.open(TCHAR_TO_UTF8(*temp), ios_base::app);
 	if (newSession)
 	{
@@ -54,7 +132,7 @@ bool USmartTerrainFunctions::SaveToFile_SaveStringTextToFile(FString fileName, F
 		stream << dt << '\n';
 	}
 	string data(TCHAR_TO_UTF8(*SaveText));
-	stream << data;
+	stream << data << '\n';
 	stream.close();
 
 	Result = path + " : " + SaveText;
@@ -75,7 +153,7 @@ bool USmartTerrainFunctions::SaveToFile_SaveActorPosition(AActor* actor, FString
 	return true;
 }
 
-bool USmartTerrainFunctions::SaveNPCNeeds(AActor* SmartNpc, TArray<FString> labels, const int32 h, const int32 m, const int32 s, FString& Result)
+bool USmartTerrainFunctions::SaveNPCNeeds(AActor* SmartNpc, const int32 h, const int32 m, const int32 s, FString& Result)
 {
 	ASmartNPC* npc = Cast<ASmartNPC>(SmartNpc);
 	if (!npc)
@@ -83,28 +161,9 @@ bool USmartTerrainFunctions::SaveNPCNeeds(AActor* SmartNpc, TArray<FString> labe
 		Result = "Invalid parameter: SmartNpc";
 		return false;
 	}
-	if (labels.Num() <= 0)
-	{
-		Result = "Please provide Labels";
-		return false;
-	}
 	
 	FString name = npc->GetName();
 	name += " Needs";
-	if (firstTimeLoggingNeeds)
-	{
-		firstTimeLoggingNeeds = false;
-		string labForm = string("Tid\t");
-		for (auto it = labels.CreateConstIterator(); it; ++it)
-		{
-			FString f = *it;
-			labForm += TCHAR_TO_UTF8(*f);
-			labForm += '\t';
-		}
-		labForm += '\n';
-		FString res = FString();
-		SaveToFile_SaveStringTextToFile(name, labForm.c_str(), res);
-	}
 
 	auto it = npc->MyNeeds.CreateConstIterator();
 	string time = string();
@@ -119,10 +178,10 @@ bool USmartTerrainFunctions::SaveNPCNeeds(AActor* SmartNpc, TArray<FString> labe
 	{
 		time += to_string(it->CurrentValue) + '\t';
 	}
-	time += '\n';
 
 	FString data = time.c_str();
-	SaveToFile_SaveStringTextToFile(name, data, Result);
+	SaveLog("Needs", time);
+	//SaveToFile_SaveStringTextToFile(name, data, Result);
 
 	return true;
 }
@@ -137,25 +196,56 @@ bool USmartTerrainFunctions::LogBroadcast(const FSmartBroadcast& b, AActor* npc,
 	}
 	name += " Broadcasts";
 
-	string data = string("\t");
-	data += "NPC: ";
+	string data = string();
 	data += TCHAR_TO_UTF8(*npc->GetName());
-	data += "\tObject: ";
+	data += "\t";
 	data += TCHAR_TO_UTF8(*sender->GetName());
-	data += "\tScore: ";
+	data += "\t";
 	data += to_string(score);
-	data += "\tPossyB: ";
+	data += "\t";
 	data += to_string(positive);
-	data += "\tNeggoB: ";
+	data += "\t";
 	data += to_string(negative);
-	data += "\tDistance: ";
+	data += "\t";
 	data += to_string(b.Distance);
-	data += "\tCost: ";
-	data += to_string(b.Cost);
-	data += "\n";
 
+	SaveLog("Broadcasts", data);
 	FString res = FString();
-	SaveToFile_SaveStringTextToFile(name, data.c_str(), res);
+	//SaveToFile_SaveStringTextToFile(name, data.c_str(), res);
+
+	return true;
+
+}
+
+bool USmartTerrainFunctions::LogSchedule(AActor* so, AActor* npc, TArray<FString> needs, const int32 h, const int32 m)
+{
+	ASmartNPC* n = Cast<ASmartNPC>(npc);
+	if (!n)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "Invalid parameter: npc");
+		return false;
+	}
+
+	ASmartObject* o = Cast<ASmartObject>(so);
+	if (!o)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "Invalid parameter: so");
+		return false;
+	}
+
+	string data = string();
+	if (h < 10) data += '0';
+	data += to_string(h) + ":";
+	if (m < 10) data += '0';
+	data += to_string(m) + '\t';
+
+	for (FString f : needs)
+	{
+		data += TCHAR_TO_UTF8(*f);
+		data += '\t';
+	}
+	
+	SaveLog("Schedule", data);
 
 	return true;
 
