@@ -28,6 +28,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
 		bool LogSchedule;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+		AActor* Home;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SmartProperty")
+		AActor* Workplace;
+
 	TMap<AActor*, struct FSmartBroadcast> ObjectMap;
 
 	// Called when the game starts or when spawned

@@ -57,65 +57,6 @@ void ASmartNPC::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 }
 
-//float ASmartNPC::EvaluateBroadcasts(const TArray<FSmartBroadcast>& contenders, struct FSmartBroadcast& winner)
-//{
-//	float localMax = 0;
-//
-//	for (FSmartBroadcast broadcast : contenders)
-//	{
-//		if (broadcast.Range > broadcast.Distance) continue;
-//
-//		for (FNPCNeed satNeed : broadcast.SatisfyingNeeds)
-//		{
-//			if (satNeed == MyCurrentNeed)
-//			{
-//				//Fler grejer här
-//				float positiveBonus = 0;
-//				float negativeBonus = 0;
-//
-//				//För att ge premie till "dyra" ställen
-//				for (FNPCNeed npcNeed : MyNeeds)
-//				{
-//					if (npcNeed.CurrentValue <= 0) 
-//					{
-//						npcNeed.CurrentValue = 0.00001f;
-//					}
-//					for (FNPCNeed penaltyNeed : broadcast.ConsumingNeeds)
-//					{
-//						if (npcNeed == penaltyNeed)
-//						{
-//							//(NegativeChangerate^1-Weight) / CurrentValue
-//							negativeBonus += (pow(penaltyNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
-//						}
-//					}
-//
-//					for (FNPCNeed incNeed : broadcast.SatisfyingNeeds)
-//					{
-//						if (npcNeed == incNeed)
-//						{
-//							//(PositiveChangerate^1-Weight) / CurrentValue
-//							positiveBonus += (pow(incNeed.ChangeRate, 1 - npcNeed.Weight)) / npcNeed.CurrentValue;
-//						}
-//					}
-//				}
-//				
-//				float activityScore = (1 + (positiveBonus - negativeBonus)) * (1 - broadcast.Cost);
-//
-//				if (activityScore >= localMax)
-//				{
-//					winner = broadcast;
-//					localMax = activityScore;
-//				}
-//
-//				break;
-//			}
-//		}
-//		
-//	}
-//	CurrentGoalScore = localMax;
-//	return localMax;
-//}
-
 float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner)
 {
 	float max = 0;
@@ -131,11 +72,41 @@ float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner)
 
 		//Räkna ut kostnad
 		double cost = broadcast.Distance / broadcast.Range;
+		
+		bool notMyHome = false;
+		bool notMyWorkplace = false;
+
+		if (Home != NULL){
+			for (FNPCNeed incNeed : broadcast.SatisfyingNeeds){
+				if (incNeed.Activity == EActivitiesEnum::VE_Sleep){
+					notMyHome = (broadcast.Sender != Home);
+				}
+			}
+		}
+
+		if (Workplace != NULL){
+			for (FNPCNeed incNeed : broadcast.SatisfyingNeeds){
+				if (incNeed.Activity == EActivitiesEnum::VE_Work){
+					notMyWorkplace = (broadcast.Sender != Workplace);
+				}
+			}
+		}
+
+		if (notMyHome || notMyWorkplace) continue;
 
 		//För varje behov
 		for (FNPCNeed npcNeed : MyNeeds){
 			float positiveBonus = 0;
 			float negativeBonus = 0;
+
+			//Check for home and workplace
+			if (Home != NULL && npcNeed.Activity == EActivitiesEnum::VE_Sleep){
+				
+			}
+
+			if (Workplace != NULL && npcNeed.Activity == EActivitiesEnum::VE_Work){
+
+			}
 
 			if (npcNeed.CurrentValue <= 0){
 				npcNeed.CurrentValue = 0.00001f;
