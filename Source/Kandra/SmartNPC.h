@@ -55,7 +55,7 @@ public:
 	FNPCNeed MyCurrentNeed;
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
-	virtual float EvaluateBroadcasts(struct FSmartBroadcast& winner);
+		virtual float EvaluateBroadcasts(struct FSmartBroadcast& winner, FString Name);
 
 	UFUNCTION(BlueprintCallable, Category = "SmartFunctions")
 	virtual float CalculateCurrentNeed();

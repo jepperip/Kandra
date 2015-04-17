@@ -24,7 +24,7 @@ void USmartTerrainFunctions::CreateLoggingFile(string fileName, string labels)
 	stream.close();
 }
 
-bool USmartTerrainFunctions::StartNewSession(TArray<FString> needLabels)
+bool USmartTerrainFunctions::StartNewSession(TArray<FString> needLabels, TArray<FString> allActors)
 {
 	time_t now = time(0);
 	char* date = ctime(&now);
@@ -36,44 +36,73 @@ bool USmartTerrainFunctions::StartNewSession(TArray<FString> needLabels)
 	p += RootDirectory.c_str();
 	string path = string(TCHAR_TO_UTF8(*p));
 	path += "/" + dateFormatted;
-	FString pathTest = path.c_str();
+	FString sessionPath = path.c_str();
 
-	if (FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*pathTest)){
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: Path: '" + pathTest + "' already exists. Logging session NOT started");
+	if (FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*sessionPath)){
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: Path: '" + sessionPath + "' already exists. Logging session NOT started");
 		return false;
 	}
-	FPlatformFileManager::Get().GetPlatformFile().CreateDirectory(*pathTest);
-	if (!FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*pathTest)){
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: Could not create path: '" + pathTest + "'. Logging session NOT started");
+	FPlatformFileManager::Get().GetPlatformFile().CreateDirectory(*sessionPath);
+	if (!FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*sessionPath)){
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: Could not create path: '" + sessionPath + "'. Logging session NOT started");
 		return false;
 	}
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "LOGGING: Created path: '" + pathTest + "', logging session started");
-
-
-
-	//Create files
-	string labForm = string("Tid\t");
-	for (auto it = needLabels.CreateConstIterator(); it; ++it)
+	for (auto it = allActors.CreateConstIterator(); it; ++it)
 	{
-		FString f = *it;
-		labForm += TCHAR_TO_UTF8(*f);
-		labForm += '\t';
+		FString name = *it;
+		string pathName = TCHAR_TO_UTF8(*name);
+		string finalPath = path + "/" + pathName;
+		FString finalPathFString = finalPath.c_str();
+		string testtest = TCHAR_TO_UTF8(*finalPathFString);
+		testtest = "asd";
+		
+			
+		if (FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*finalPathFString)){
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: Path: '" + finalPathFString + "' already exists. Logging session NOT started");
+			continue;
+		}
+		FPlatformFileManager::Get().GetPlatformFile().CreateDirectory(*finalPathFString);
+		if (!FPlatformFileManager::Get().GetPlatformFile().DirectoryExists(*finalPathFString)){
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, "LOGGING: Could not create path: '" + finalPathFString + "'. Logging session NOT started");
+			continue;
+		}
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "LOGGING: Created path: '" + finalPathFString + "', logging session started");
+
+
+
+		//Create files
+		string labForm = string("Tid\t");
+		for (auto it = needLabels.CreateConstIterator(); it; ++it)
+		{
+			FString f = *it;
+			labForm += TCHAR_TO_UTF8(*f);
+			labForm += '\t';
+		}
+				
+		CreateLoggingFile(finalPath + "/Schedule", "Time\tNeed\t");
+		CreateLoggingFile(finalPath + "/Needs", labForm);
+		CreateLoggingFile(finalPath + "/Broadcasts", "NPC\tObject\tScore\tPositiv\tnNegativ\nAvstnd");
+
+		
 	}
-	
-	CreateLoggingFile(path + "/Schedule", "Time\tNeed\t");
-	CreateLoggingFile(path + "/Needs", labForm);
-	CreateLoggingFile(path + "/Broadcasts", "NPC\tObject\tScore\tPositiv\tnNegativ\nAvstnd");
+
+	//CreateLoggingFile(path + "/" + pathName + "/Schedule", "Time\tNeed\t");
+	//CreateLoggingFile(path + "/" + pathName + "/Needs", labForm);
+	//CreateLoggingFile(path + "/" + pathName + "/Broadcasts", "NPC\tObject\tScore\tPositiv\tnNegativ\nAvstnd");
 
 	sessionInitialized = true;
 	SessionDirectory = path;
 	return true;
 }
 
-void USmartTerrainFunctions::SaveLog(string fileName, string data)
+void USmartTerrainFunctions::SaveLog(string fileName, string data, FString Name)
 {
+	string npcName = string(TCHAR_TO_UTF8(*Name));
+
 	ofstream stream;
-	stream.open(SessionDirectory + '/' + fileName + fileEnding, ios_base::app);
+	stream.open(SessionDirectory + "/" + npcName + "/" + fileName + fileEnding, ios_base::app);
 	stream << data << '\n';
 	stream.close();
 }
@@ -153,7 +182,7 @@ bool USmartTerrainFunctions::SaveToFile_SaveActorPosition(AActor* actor, FString
 	return true;
 }
 
-bool USmartTerrainFunctions::SaveNPCNeeds(AActor* SmartNpc, const int32 h, const int32 m, const int32 s, FString& Result)
+bool USmartTerrainFunctions::SaveNPCNeeds(AActor* SmartNpc, FString Name, const int32 h, const int32 m, const int32 s, FString& Result)
 {
 	ASmartNPC* npc = Cast<ASmartNPC>(SmartNpc);
 	if (!npc)
@@ -180,13 +209,13 @@ bool USmartTerrainFunctions::SaveNPCNeeds(AActor* SmartNpc, const int32 h, const
 	}
 
 	FString data = time.c_str();
-	SaveLog("Needs", time);
+	SaveLog("Needs", time, Name);
 	//SaveToFile_SaveStringTextToFile(name, data, Result);
 
 	return true;
 }
 
-bool USmartTerrainFunctions::LogBroadcast(const FSmartBroadcast& b, AActor* npc, float score, float positive, float negative)
+bool USmartTerrainFunctions::LogBroadcast(const FSmartBroadcast& b, AActor* npc, FString Name, float score, float positive, float negative)
 {
 	FString name = npc->GetName();
 	AActor* sender = b.Sender;
@@ -209,7 +238,7 @@ bool USmartTerrainFunctions::LogBroadcast(const FSmartBroadcast& b, AActor* npc,
 	data += "\t";
 	data += to_string(b.Distance);
 
-	SaveLog("Broadcasts", data);
+	SaveLog("Broadcasts", data, Name);
 	FString res = FString();
 	//SaveToFile_SaveStringTextToFile(name, data.c_str(), res);
 
@@ -217,7 +246,7 @@ bool USmartTerrainFunctions::LogBroadcast(const FSmartBroadcast& b, AActor* npc,
 
 }
 
-bool USmartTerrainFunctions::LogSchedule(AActor* so, AActor* npc, TArray<FString> needs, const int32 h, const int32 m)
+bool USmartTerrainFunctions::LogSchedule(AActor* so, AActor* npc, FString Name, TArray<FString> needs, const int32 h, const int32 m)
 {
 	ASmartNPC* n = Cast<ASmartNPC>(npc);
 	if (!n)
@@ -245,7 +274,7 @@ bool USmartTerrainFunctions::LogSchedule(AActor* so, AActor* npc, TArray<FString
 		data += '\t';
 	}
 	
-	SaveLog("Schedule", data);
+	SaveLog("Schedule", data, Name);
 
 	return true;
 

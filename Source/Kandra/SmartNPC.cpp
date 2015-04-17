@@ -45,9 +45,15 @@ void ASmartNPC::BeginPlay()
 // Called every frame
 void ASmartNPC::Tick( float DeltaTime )
 {
+	for (auto it = MyNeeds.CreateIterator(); it; ++it){
+		float* val_p = &it->CurrentValue;
+		if (val_p){
+			if (*val_p >= 1.0f){
+				*val_p = 1.0f;
+			}
+		}
+	}
 	Super::Tick( DeltaTime );
-	
-
 }
 
 // Called to bind functionality to input
@@ -57,7 +63,7 @@ void ASmartNPC::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 
 }
 
-float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner)
+float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner, FString Name)
 {
 	float max = 0;
 	auto it = ObjectMap.CreateConstIterator();
@@ -131,7 +137,7 @@ float ASmartNPC::EvaluateBroadcasts(struct FSmartBroadcast& winner)
 		float broadcastScore = (totalPositive - totalNegative) + 1 - cost;
 
 		if (LogBroadcasts){
-			USmartTerrainFunctions::LogBroadcast(broadcast, this, broadcastScore, totalPositive, totalNegative);
+			USmartTerrainFunctions::LogBroadcast(broadcast, this, Name, broadcastScore, totalPositive, totalNegative);
 		}
 
 		//om poängen är bätter än current, sätt broadcasten till tillfällig vinanre

@@ -120,7 +120,7 @@ class KANDRA_API USmartTerrainFunctions : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "StartNewSession"), Category = "LOGGING")
-		static bool StartNewSession(TArray<FString> needLabels);
+		static bool StartNewSession(TArray<FString> needLabels, TArray<FString> allActors);
 
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveToFile"), Category = "LogginToolsForStani")
 		static bool SaveToFile_SaveStringTextToFile(FString fileName, FString SaveText, FString& Result);
@@ -129,20 +129,20 @@ public:
 		static bool SaveToFile_SaveActorPosition(AActor* actor, FString& Result);
 
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "SaveNPCNeeds"), Category = "LOGGING")
-		static bool SaveNPCNeeds(AActor* SmartNpc, const int32 h, const int32 m, const int32 s, FString& Result);
+		static bool SaveNPCNeeds(AActor* SmartNpc, FString Name, const int32 h, const int32 m, const int32 s, FString& Result);
 
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "LogBroadcast"), Category = "LOGGING")
-		static bool LogBroadcast(const FSmartBroadcast& b, AActor* npc, float score, float positive, float negative);
+		static bool LogBroadcast(const FSmartBroadcast& b, AActor* npc, FString Name, float score, float positive, float negative);
 
 	UFUNCTION(BlueprintCallable, meta = (HidePin = "WorldContextObject", DefaultToSelf = "WorldContextObject", FriendlyName = "LogSchedule"), Category = "LOGGING")
-		static bool LogSchedule(AActor* so, AActor* npc, TArray<FString> needs, const int32 h, const int32 m);
+		static bool LogSchedule(AActor* so, AActor* npc, FString Name, TArray<FString> needs, const int32 h, const int32 m);
 
 private:
 
 	inline static float GetElapsedTime(UWorld* contex) { return contex->GetTimeSeconds(); }
 	inline static float GetElapsedTime(AActor* contexHolder) { return contexHolder->GetWorld()->GetTimeSeconds(); }
 
-	static void SaveLog(string fileName, string data);
+	static void SaveLog(string fileName, string data, FString Name);
 
 	static void CreateLoggingFile(string fileName, string labels);
 
